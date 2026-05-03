@@ -40,13 +40,17 @@ class MysqlConnection extends IlluminateMySqlConnection
      */
     protected function getDefaultSchemaGrammar()
     {
-        $grammar = new MySqlGrammar();
+        $grammar = new MySqlGrammar($this);
 
         if (method_exists($grammar, 'setConnection')) {
             $grammar->setConnection($this);
         }
 
-        return $this->withTablePrefix($grammar);
+        if (method_exists($this, 'withTablePrefix')) {
+            return $this->withTablePrefix($grammar);
+        }
+
+        return $grammar;
     }
 
     /**

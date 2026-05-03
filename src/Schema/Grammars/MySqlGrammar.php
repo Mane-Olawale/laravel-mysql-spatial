@@ -3,15 +3,25 @@
 namespace Grimzy\LaravelMysqlSpatial\Schema\Grammars;
 
 use Grimzy\LaravelMysqlSpatial\Schema\Blueprint;
+use Illuminate\Database\Connection;
 use Illuminate\Database\Schema\Grammars\MySqlGrammar as IlluminateMySqlGrammar;
 use Illuminate\Support\Fluent;
+use ReflectionClass;
 
 class MySqlGrammar extends IlluminateMySqlGrammar
 {
     const COLUMN_MODIFIER_SRID = 'Srid';
 
-    public function __construct()
+    public function __construct(?Connection $connection = null)
     {
+        // Laravel 12+ requires Connection in parent grammar constructor.
+        if ($connection !== null) {
+            $parentConstructor = (new ReflectionClass(parent::class))->getConstructor();
+            if ($parentConstructor && $parentConstructor->getNumberOfParameters() > 0) {
+                parent::__construct($connection);
+            }
+        }
+
         // Enable SRID as a column modifier
         if (!in_array(self::COLUMN_MODIFIER_SRID, $this->modifiers)) {
             $this->modifiers[] = self::COLUMN_MODIFIER_SRID;
